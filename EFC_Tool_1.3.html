@@ -82,12 +82,7 @@
 
     <script src="https://rsmbl.github.io/Resemble.js/resemble.js"></script>
     <script>
-        // Page Counter Feature
-        const pageCounterElement = document.getElementById('pageCounter');
-        let pageViews = localStorage.getItem('pageViews') || 0;
-        pageViews++;
-        localStorage.setItem('pageViews', pageViews);
-        pageCounterElement.innerText = `This page has been opened ${pageViews} time(s).`;
+        
 
         // Image Comparison Feature
         function compareImages() {
