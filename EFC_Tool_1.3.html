@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EFC_Tool For Error Free Communication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: center;
+        }
+        img {
+            max-width: 100%;
+            margin-top: 10px;
+        }
+        .page-counter {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Welcome to Error Free Communication Tool</h2>
+
+    <div class="container">
+        <label>Select Image 1:</label>
+        <input type="file" id="image1" accept="image/*"><br>
+        
+        <label>Select Image 2:</label>
+        <input type="file" id="image2" accept="image/*"><br>
+
+        <button onclick="compareImages()">Compare Images</button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <div class="page-counter" id="pageCounter"></div>
+
+    <footer>
+        For more on this tool, email us at <a href="mailto:EFC_dev_team@aexp.com">EFC_dev_team@aexp.com</a>
+    </footer>
+
+    <script src="https://rsmbl.github.io/Resemble.js/resemble.js"></script>
+    <script>
+        // Page Counter Feature
+        const pageCounterElement = document.getElementById('pageCounter');
+        let pageViews = localStorage.getItem('pageViews') || 0;
+        pageViews++;
+        localStorage.setItem('pageViews', pageViews);
+        pageCounterElement.innerText = `This page has been opened ${pageViews} time(s).`;
+
+        // Image Comparison Feature
+        function compareImages() {
+            const image1Input = document.getElementById('image1').files[0];
+            const image2Input = document.getElementById('image2').files[0];
+            const resultElement = document.getElementById('result');
+
+            // Clear previous result
+            resultElement.innerHTML = '';
+
+            if (!image1Input || !image2Input) {
+                resultElement.innerHTML = `<p style="color: red;">Please select both images!</p>`;
+                return;
+            }
+
+            const reader1 = new FileReader();
+            const reader2 = new FileReader();
+
+            reader1.onload = function(event1) {
+                const image1DataURL = event1.target.result;
+
+                reader2.onload = function(event2) {
+                    const image2DataURL = event2.target.result;
+
+                    resemble(image1DataURL)
+                        .compareTo(image2DataURL)
+                        .onComplete(function(data) {
+                            // Display the mismatch percentage
+                            resultElement.innerHTML = `<p>Mismatch Percentage: <strong>${data.misMatchPercentage}%</strong></p>`;
+
+                            // Display the difference image
+                            const diffImage = new Image();
+                            diffImage.src = data.getImageDataUrl();
+                            resultElement.appendChild(diffImage);
+                        });
+                };
+
+                reader2.readAsDataURL(image2Input);
+            };
+
+            reader1.readAsDataURL(image1Input);
+        }
+    </script>
+
+</body>
+</html>
