@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Output Comparison Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>HTML Output Comparison Tool</h2>
+
+    <div class="container">
+        <label for="html1">HTML Output 1:</label>
+        <textarea id="html1" placeholder="Paste the first HTML output here"></textarea>
+
+        <label for="html2">HTML Output 2:</label>
+        <textarea id="html2" placeholder="Paste the second HTML output here"></textarea>
+
+        <button onclick="compareHtml()">Compare Outputs</button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function compareHtml() {
+            const html1 = document.getElementById('html1').value.trim();
+            const html2 = document.getElementById('html2').value.trim();
+            const resultElement = document.getElementById('result');
+
+            // Clear previous results
+            resultElement.innerHTML = '';
+
+            if (!html1 || !html2) {
+                resultElement.innerHTML = `<p style="color: red;">Please enter both HTML outputs to compare!</p>`;
+                return;
+            }
+
+            // Convert HTML strings into DOM structures for a structural comparison
+            const parser = new DOMParser();
+            const doc1 = parser.parseFromString(html1, 'text/html');
+            const doc2 = parser.parseFromString(html2, 'text/html');
+
+            const normalizedHtml1 = doc1.body.innerHTML.trim();
+            const normalizedHtml2 = doc2.body.innerHTML.trim();
+
+            // Calculate structural differences
+            let mismatchPercentage = calculateMismatch(normalizedHtml1, normalizedHtml2);
+
+            // Display the result
+            resultElement.innerHTML = `
+                <p>Mismatch Percentage: <strong>${mismatchPercentage.toFixed(2)}%</strong></p>
+                <p>Differences are shown below:</p>
+                <div style="text-align: left; color: red;">
+                    <pre>${getDifferences(normalizedHtml1, normalizedHtml2)}</pre>
+                </div>
+            `;
+        }
+
+        function calculateMismatch(str1, str2) {
+            // Simple Levenshtein Distance calculation
+            const len1 = str1.length;
+            const len2 = str2.length;
+            const dp = Array.from({ length: len1 + 1 }, () => Array(len2 + 1).fill(0));
+
+            for (let i = 0; i <= len1; i++) dp[i][0] = i;
+            for (let j = 0; j <= len2; j++) dp[0][j] = j;
+
+            for (let i = 1; i <= len1; i++) {
+                for (let j = 1; j <= len2; j++) {
+                    if (str1[i - 1] === str2[j - 1]) {
+                        dp[i][j] = dp[i - 1][j - 1];
+                    } else {
+                        dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1;
+                    }
+                }
+            }
+
+            const editDistance = dp[len1][len2];
+            const maxLength = Math.max(len1, len2);
+            return (editDistance / maxLength) * 100;
+        }
+
+        function getDifferences(html1, html2) {
+            const htmlLines1 = html1.split('\n');
+            const htmlLines2 = html2.split('\n');
+            const differences = [];
+
+            htmlLines1.forEach((line, index) => {
+                if (line !== (htmlLines2[index] || "")) {
+                    differences.push(`Line ${index + 1}:`);
+                    differences.push(`Output 1: ${line}`);
+                    differences.push(`Output 2: ${htmlLines2[index] || ""}`);
+                    differences.push('---');
+                }
+            });
+
+            return differences.join('\n');
+        }
+    </script>
+
+</body>
+</html>
