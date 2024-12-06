@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Comparison Tool with Previews</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        iframe {
+            display: none;
+        }
+        .result img {
+            max-width: 100%;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Visual Comparison Tool with Previews</h2>
+
+    <div class="container">
+        <label for="file1">Upload File 1 (HTML or Image):</label>
+        <input type="file" id="file1" accept=".html,image/*">
+
+        <label for="file2">Upload File 2 (HTML or Image):</label>
+        <input type="file" id="file2" accept=".html,image/*">
+
+        <button onclick="compareFiles()">Compare Files</button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+    <script src="https://rsmbl.github.io/Resemble.js/resemble.js"></script>
+    <script>
+        async function compareFiles() {
+            const file1 = document.getElementById('file1').files[0];
+            const file2 = document.getElementById('file2').files[0];
+            const resultElement = document.getElementById('result');
+
+            // Clear previous results
+            resultElement.innerHTML = '';
+
+            if (!file1 || !file2) {
+                resultElement.innerHTML = `<p style="color: red;">Please upload both files to compare!</p>`;
+                return;
+            }
+
+            // Identify file types
+            const isHTML1 = file1.type === "text/html";
+            const isHTML2 = file2.type === "text/html";
+            const isImage1 = file1.type.startsWith("image/");
+            const isImage2 = file2.type.startsWith("image/");
+
+            if ((isHTML1 || isImage1) && (isHTML2 || isImage2)) {
+                // Process files accordingly
+                const image1 = await processFile(file1, isHTML1);
+                const image2 = await processFile(file2, isHTML2);
+
+                // Use Resemble.js to compare the outputs
+                resemble(image1)
+                    .compareTo(image2)
+                    .onComplete(data => {
+                        resultElement.innerHTML = `
+                            <p>Mismatch Percentage: <strong>${data.misMatchPercentage}%</strong></p>
+                            <p>Difference Image:</p>
+                            <img src="${data.getImageDataUrl()}" alt="Difference">
+                            <p>Preview of Image 1:</p>
+                            <img src="${image1}" alt="Image 1">
+                            <p>Preview of Image 2:</p>
+                            <img src="${image2}" alt="Image 2">
+                        `;
+                    });
+            } else {
+                resultElement.innerHTML = `<p style="color: red;">Unsupported file types! Please upload HTML or image files only.</p>`;
+            }
+        }
+
+        // Helper function to process file
+        async function processFile(file, isHTML) {
+            if (isHTML) {
+                return renderHTMLToImage(file);
+            } else {
+                // If it's an image, return the image as a data URL
+                return new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = event => resolve(event.target.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+
+        // Function to render HTML to an image using dom-to-image
+        async function renderHTMLToImage(file) {
+            const htmlContent = await file.text();
+
+            // Create a hidden container to load the HTML
+            const container = document.createElement('div');
+            container.style.position = 'absolute';
+            container.style.left = '-9999px';
+            container.innerHTML = htmlContent;
+            document.body.appendChild(container);
+
+            // Use dom-to-image to capture the container as an image
+            const dataUrl = await domtoimage.toPng(container);
+
+            // Remove the container after rendering
+            document.body.removeChild(container);
+
+            return dataUrl;
+        }
+    </script>
+
+</body>
+</html>
