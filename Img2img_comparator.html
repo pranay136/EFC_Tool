@@ -1,0 +1,50 @@
+<html lang="en">
+
+<body>
+    <h1>Resemble.js image comparission demo.</h1>
+    File1 <input type='file' id='file1' />
+    <br />
+    File2 <input type='file' id='file2' />
+    <br />
+    <br />
+    <button>Show Diff</button>
+    <hr />
+    <h2 style='text-align:center'>Output</h2>
+    <button id='igl' style="display: none;">Ignore Less</button>
+    <button id='igc' style="display: none;">Ignore Colors</button>
+    <div id='diff'></div>
+
+    <script src="https://rsmbl.github.io/Resemble.js/resemble.js"></script>
+    <script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js></script>
+    <script>
+        var file1;
+        var file2;
+        var control;
+        $('#file1').on('change', function () {
+            file1 = this.files[0];
+        });
+
+        $('#file2').on('change', function () {
+            file2 = this.files[0];
+        });
+
+        $('button').on('click', function () {
+            control = resemble(file1).compareTo(file2).onComplete(onComplete)
+        });
+
+        function onComplete(data) {
+            console.log(data);
+            var html = [];
+            html.push("<img style='width:100%;' src='" + data.getImageDataUrl() + "'/>");
+            $('#diff').html(html.join(''));
+        }
+        $('igl').on('click', function () {
+            control.ignoreLess();
+        });
+        $('igc').on('click', function () {
+            control.ignoreColors();
+        });
+    </script>
+</body>
+
+</html>
