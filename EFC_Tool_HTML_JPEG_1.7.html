@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Comparison Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h2 {
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .result-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            border-radius: 4px;
+        }
+        .result-item button {
+            margin-left: 10px;
+        }
+        .diff-container {
+            display: none;
+            margin-top: 10px;
+        }
+        canvas {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>HTML Comparison Tool</h2>
+
+    <div class="container">
+        <label for="masterFile">Upload Master File (HTML or Image):</label>
+        <input type="file" id="masterFile" accept=".html,image/*">
+
+        <label for="childFiles">Upload Child Files (Multiple HTML or Images):</label>
+        <input type="file" id="childFiles" accept=".html,image/*" multiple>
+
+        <button onclick="compareFiles()">Compare Files</button>
+
+        <div class="results" id="results"></div>
+    </div>
+
+    <script src="https://rsmbl.github.io/Resemble.js/resemble.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script>
+        async function compareFiles() {
+            const masterFile = document.getElementById('masterFile').files[0];
+            const childFiles = document.getElementById('childFiles').files;
+
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = ''; // Clear previous results
+
+            if (!masterFile || childFiles.length === 0) {
+                resultsContainer.innerHTML = '<p style="color: red;">Please upload a master file and at least one child file!</p>';
+                return;
+            }
+
+            const masterImage = await processFile(masterFile);
+
+            for (const childFile of childFiles) {
+                const childImage = await processFile(childFile);
+
+                // Use Resemble.js to compare the images
+                resemble(masterImage)
+                    .compareTo(childImage)
+                    .onComplete(data => {
+                        const mismatchPercentage = data.misMatchPercentage;
+
+                        // Create result item for this child image
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'result-item';
+                        resultItem.innerHTML = `
+                            <p>Child File: <strong>${childFile.name}</strong> - Mismatch: <strong>${mismatchPercentage}%</strong></p>
+                            <button onclick="toggleDiff(this)">Show Difference</button>
+                            <div class="diff-container">
+                                <img src="${data.getImageDataUrl()}" alt="Difference Image">
+                            </div>
+                        `;
+                        resultsContainer.appendChild(resultItem);
+                    });
+            }
+        }
+
+        // Helper function to process file (HTML or Image)
+        async function processFile(file) {
+            if (file.type === "text/html") {
+                return await renderHTMLToCanvas(file);
+            } else if (file.type.startsWith("image/")) {
+                return getFileDataURL(file);
+            } else {
+                throw new Error("Unsupported file type!");
+            }
+        }
+
+        // Convert HTML file to canvas using html2canvas
+        async function renderHTMLToCanvas(file) {
+            const htmlContent = await file.text();
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'absolute';
+            iframe.style.left = '-9999px';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            document.body.appendChild(iframe);
+
+            return new Promise(resolve => {
+                iframe.onload = async () => {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    doc.open();
+                    doc.write(htmlContent);
+                    doc.close();
+
+                    // Wait for content to fully load
+                    setTimeout(() => {
+                        html2canvas(doc.body).then(canvas => {
+                            // Draw on a visible canvas if necessary
+                            const visibleCanvas = document.createElement('canvas');
+                            document.body.appendChild(visibleCanvas);
+                            const ctx = visibleCanvas.getContext('2d');
+                            visibleCanvas.width = canvas.width;
+                            visibleCanvas.height = canvas.height;
+                            ctx.drawImage(canvas, 0, 0);
+
+                            document.body.removeChild(iframe); // Clean up iframe
+                            resolve(visibleCanvas.toDataURL('image/png')); // Return base64 image data
+                        });
+                    }, 1000); // Adjust timeout for complex pages
+                };
+            });
+        }
+
+        // Convert image file to Data URL
+        function getFileDataURL(file) {
+            return new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = event => resolve(event.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Toggle visibility of the difference container
+        function toggleDiff(button) {
+            const diffContainer = button.nextElementSibling;
+            if (diffContainer.style.display === 'none' || !diffContainer.style.display) {
+                diffContainer.style.display = 'block';
+                button.textContent = 'Hide Difference';
+            } else {
+                diffContainer.style.display = 'none';
+                button.textContent = 'Show Difference';
+            }
+        }
+    </script>
+
+</body>
+</html>
