@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://rsmbl.github.io/Resemble.js/resemble.js"></script>
+  <script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <title>Compare Two HTML Pages</title>
+</head>
+<body>
+  <h1>Upload and Compare Two HTML Pages</h1>
+  <!-- File Inputs for Uploading HTML Files -->
+  <div>
+    <h2>Upload HTML Page 1</h2>
+    <input type="file" id="fileInput1" accept=".html" />
+  </div>
+  <div>
+    <h2>Upload HTML Page 2</h2>
+    <input type="file" id="fileInput2" accept=".html" />
+  </div>
+  <!-- Button to trigger comparison -->
+  <button onclick="compareUploadedFiles()">Compare</button>
+  <div id="imageComparisonResults" style="margin-top: 20px;">
+    <!-- Comparison Results will be shown here -->
+  </div>
+  <script>
+    // Function to read the HTML file and return its content
+    function readFile(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        callback(event.target.result);
+      };
+      reader.readAsText(file);
+    }
+    // Function to render HTML content to an image
+    function renderHTMLToImage(htmlContent, callback) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      document.body.appendChild(tempDiv); // Append to body temporarily for rendering
+      html2canvas(tempDiv).then(function(canvas) {
+        document.body.removeChild(tempDiv); // Remove the temporary div after rendering
+        const imgData = canvas.toDataURL("image/png"); // Convert to image data URL
+        callback(imgData); // Pass the image data URL to the callback
+      });
+    }
+    // Function to compare the two uploaded HTML files
+    function compareUploadedFiles() {
+      const fileInput1 = document.getElementById("fileInput1");
+      const fileInput2 = document.getElementById("fileInput2");
+      if (!fileInput1.files.length || !fileInput2.files.length) {
+        alert("Please upload both HTML files!");
+        return;
+      }
+      // Read the HTML files
+      readFile(fileInput1.files[0], function(html1) {
+        readFile(fileInput2.files[0], function(html2) {
+          // Render both HTML pages to images
+          renderHTMLToImage(html1, function(image1) {
+            renderHTMLToImage(html2, function(image2) {
+              // Use Resemble.js to compare the two images
+              resemble(image1)
+                .compareTo(image2)
+                .onComplete(function(data) {
+                  // Display the comparison results
+                  const resultHtml = `
+                    <h3>Comparison Results:</h3>
+                    <p><strong>Mismatch Percentage:</strong> ${data.misMatchPercentage}%</p>
+                    <p><strong>Diff Image:</strong></p>
+                    <img src="${data.getImageDataUrl()}" alt="Diff Image" />
+                  `;
+                  document.getElementById("imageComparisonResults").innerHTML = resultHtml;
+                });
+            });
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>
