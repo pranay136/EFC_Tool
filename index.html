@@ -1,131 +1,489 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EFC_Tool For Error Free Communication</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 20px;
-        }
-        h2 {
-            color: #333;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            margin: 20px auto;
-        }
-        input[type="file"] {
-            margin-bottom: 10px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .result {
-            margin-top: 20px;
-            text-align: center;
-        }
-        img {
-            max-width: 100%;
-            margin-top: 10px;
-        }
-        .page-counter {
-            margin: 10px 0;
-            font-size: 14px;
-            color: #666;
-            text-align: center;
-        }
-        footer {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #555;
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error Communication Tool</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"> <!-- Font Awesome Icons -->
+  <script src="https://rsmbl.github.io/Resemble.js/resemble.js"></script>
+  <script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    /* General Reset */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #F4F4F4;
+      color: #333;
+    }
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      color: #003366;
+      background-color: white;
+    }
+    header img {
+      height: 40px;
+    }
+
+    .header-left {
+    display: flex;
+    align-items: center;
+    }
+    .header-left img {
+    margin-right: 20px;
+    }
+    .tool {
+    font-size: 20px; /* Adjust size as needed */
+    font-weight: bold; /* Bold text for emphasis */
+    color: #003366; /* Matches the header's text color */
+    }
+
+    /* Right-Side Icons */
+    .header-icons {
+      display: flex;
+      gap: 15px;
+    }
+    .header-icons a {
+      color: #003366;
+      text-decoration: none;
+      font-size: 18px;
+      padding: 10px;
+      transition: color 0.3s;
+    }
+
+    .header-icons i {
+      font-size: 20px;
+    }
+
+    /* Banner */
+    .banner {
+      text-align: center;
+      background-color: #006FCF;
+      color: white;
+      padding: 80px 40px;
+    }
+    .banner h1 {
+      margin: 0;
+      font-size: 38px;
+    }
+    .banner p {
+      margin: 10px 0 0;
+      font-size: 18px;
+    }
+    /* Main Content */
+    .content {
+      text-align: center;
+      margin: 30px auto;
+      max-width: 1200px;
+    }
+    .content h2 {
+      color: #003366;
+    }
+    .btn-group {
+      margin-top: 20px;
+    }
+    .btn-group button {
+      background-color: #0074D9;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .btn-group button:hover {
+      background-color: #005BB5;
+    }
+    #imageComparisonResults {
+      margin-top: 20px;
+      padding: 5px;
+      border-radius: 8px;
+      max-width: 800px;
+    }
+    #imageComparisonResults img {
+      display: block;
+      /* margin: 10px 0; */
+      width: 130%; /* Adjust the width */
+      max-width: 1800px; /* Restrict maximum size */
+      height: auto; /* Maintain aspect ratio */
+    }
+    #comparisonResults{
+      margin-top: 20px;
+      padding: 5px;
+      border-radius: 8px;
+      max-width: 800px;
+    }
+    #comparisonResults img {
+      display: block;
+      /* margin: 10px 0; */
+      width: 130%; /* Adjust the width */
+      max-width: 1800px; /* Restrict maximum size */
+      height: auto; /* Maintain aspect ratio */
+    }
+    /* Forms for Options */
+    .form-container {
+      display: none;
+      margin-top: 20px;
+      text-align: left;
+      padding: 20px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      border-radius: 5px;
+    }
+    .form-container label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .form-container input[type="file"] {
+      display: block;
+      margin-bottom: 20px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 15px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .uploads-container, .results-container {
+      margin-top: 20px;
+    }
+    .file-link {
+      display: block;
+      margin: 5px 0;
+      text-decoration: none;
+      color: #007BFF;
+    }
+    .file-link:hover {
+      text-decoration: underline;
+    }
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #333;
+      color: white;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
-
-    <h2>Welcome to Error Free Communication Tool</h2>
-
-    <div class="container">
-        <label>Select Image 1:</label>
-        <input type="file" id="image1" accept="image/*"><br>
-        
-        <label>Select Image 2:</label>
-        <input type="file" id="image2" accept="image/*"><br>
-
-        <button onclick="compareImages()">Compare Images</button>
-
-        <div class="result" id="result"></div>
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+        <img src="./amex_logo.png" alt="Amex Logo">
+        <span class="tool">EFC Tool</span>
     </div>
+    <div class="header-icons">
+        <!-- Quick Start Guide -->
+        <a href="" title="Quick Start Guide" target="_blank">
+          <i class="fas fa-book"></i>
+        </a>
+        <!-- Slack -->
+        <a href="https://slack.aexp.com" title="Slack" target="_blank">
+          <i class="fab fa-slack"></i>
+        </a>
+        <!-- Email -->
+        <a href="mailto:EFC_dev_team@gmail.com" title="Email Us">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </div>
+  </header>
+  <!-- Banner -->
+  <div class="banner">
+    <h1>Error Free Communication Tool</h1>
+    <p>Making communication seamless and efficient</p>
+  </div>
+  <!-- Main Content -->
+  <div class="content">
+    <h2>Select a Comparator</h2>
+    <div class="btn-group">
+      <button onclick="showForm('imageComparator')">Image to Image Comparator</button>
+      <button onclick="showForm('htmlComparator')">HTML to HTML Comparator</button>
+      <button onclick="showForm('bulkComparator')">Bulk HTML-IMG Comparator</button>
+    </div>
+    <!-- Image Comparator Form -->
+    <div id="imageComparator" class="form-container">
+      <h3 style="text-align: center;">Image Comparator</h3>
+      <label for="image1">Upload First Image:</label>
+      <input type="file" id="image1" accept="image/*">
+      <label for="image2">Upload Second Image:</label>
+      <input type="file" id="image2" accept="image/*">
+      <button onclick="compareImages()">Compare Images</button>
+        <div class="result" id="result"></div>
+        <canvas id="canvas" width="600" height="400"></canvas>
+    </div>
+    <!-- HTML Comparator Form -->
+    <div id="htmlComparator" class="form-container">
+      <h3 style="text-align: center;">HTML Comparator</h3>
+      <label for="html1">Upload First HTML File:</label>
+      <input type="file" id="fileInput1" accept=".html" />
+      <label for="html2">Upload Second HTML File:</label>
+      <input type="file" id="fileInput2" accept=".html" />
+      <button onclick="compareUploadedFiles()">Compare HTML</button>
+      <div id="imageComparisonResults"></div>
+    </div>
+    <!-- Bulk Comparator Form -->
+    <div id="bulkComparator" class="form-container">
+      <h3 style="text-align: center;">Bulk HTML-IMG Comparator</h3>
+      <label>Upload Master/Base File: (Images or HTML)</label>
+      <input type="file" id="baseFileInput" accept=".html,.png,.jpg,.jpeg" />
+      <label>Upload Child File(s): (Images or HTML)</label>
+      <input type="file" id="childFileInput" accept=".html,.png,.jpg,.jpeg" />
+      <div id="uploadedFiles" class="uploads-container"></div>
+      <div id="comparisonButtons"></div>
+      <div id="comparisonResults" class="results-container"></div>
+    </div>
+  </div>
 
-    <div class="page-counter" id="pageCounter"></div>
+  <!-- Footer -->
+  <footer>
+    Copyright © 2024 American Express. Powered by Gen AI.
+  </footer>
+  <script>
+    // Function to Show Relevant Form
+    function showForm(formId) {
+      // Hide all forms
+      const forms = document.querySelectorAll('.form-container');
+      forms.forEach(form => form.style.display = 'none');
+      // Show the selected form
+      const form = document.getElementById(formId);
+      if (form) {
+        form.style.display = 'block';
+      }
+    }
+    function compareImages() {
+    const image1Input = document.getElementById('image1').files[0];
+    const image2Input = document.getElementById('image2').files[0];
 
-    <footer>
-        For more on this tool, email us at <a href="mailto:EFC_dev_team@aexp.com">EFC_dev_team@aexp.com</a>
-    </footer>
+    // Check if both images are selected
+    if (!image1Input || !image2Input) {
+        alert("Please select both images!");
+        return;
+    }
 
-    <script src="https://rsmbl.github.io/Resemble.js/resemble.js"></script>
-    <script>
-        
+    const reader1 = new FileReader();
+    const reader2 = new FileReader();
 
-        // Image Comparison Feature
-        function compareImages() {
-            const image1Input = document.getElementById('image1').files[0];
-            const image2Input = document.getElementById('image2').files[0];
-            const resultElement = document.getElementById('result');
+    reader1.onload = function(event1) {
+        const image1DataURL = event1.target.result;
 
-            // Clear previous result
-            resultElement.innerHTML = '';
+        reader2.onload = function(event2) {
+            const image2DataURL = event2.target.result;
 
-            if (!image1Input || !image2Input) {
-                resultElement.innerHTML = `<p style="color: red;">Please select both images!</p>`;
-                return;
-            }
+            // Use Resemble.js to compare images
+            resemble(image1DataURL)
+                .compareTo(image2DataURL)
+                .onComplete(function(data) {
+                    const resultElement = document.getElementById('result');
 
-            const reader1 = new FileReader();
-            const reader2 = new FileReader();
+                    // Display the mismatch percentage
+                    resultElement.innerHTML = `<br><p><strong>Mismatch Percentage: ${data.misMatchPercentage}%</strong></p>`;
 
-            reader1.onload = function(event1) {
-                const image1DataURL = event1.target.result;
+                    // Load images into canvas
+                    const canvas = document.getElementById('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
 
-                reader2.onload = function(event2) {
-                    const image2DataURL = event2.target.result;
+                    // Load the base image into canvas first
+                    img.onload = function() {
+                        // Draw image on canvas
+                        // ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        // ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                    resemble(image1DataURL)
-                        .compareTo(image2DataURL)
-                        .onComplete(function(data) {
-                            // Display the mismatch percentage
-                            resultElement.innerHTML = `<p>Mismatch Percentage: <strong>${data.misMatchPercentage}%</strong></p>`;
+                        // Draw bounding boxes for differences
+                        if (data.diffBounds) {
+                            const { left, top, right, bottom } = data.diffBounds;
 
-                            // Display the difference image
-                            const diffImage = new Image();
-                            diffImage.src = data.getImageDataUrl();
-                            resultElement.appendChild(diffImage);
-                        });
-                };
+                            ctx.strokeStyle = 'red';
+                            ctx.lineWidth = 2;
+                            // ctx.strokeRect(left, top, right - left, bottom - top);
+                        }
+                    };
+                    img.src = image1DataURL; // Load the first image into the canvas
 
-                reader2.readAsDataURL(image2Input);
-            };
+                    // Display the compared image with highlighted differences
+                    const diffImage = new Image();
+                    diffImage.src = data.getImageDataUrl();
+                    resultElement.appendChild(diffImage);
+                });
+        };
 
-            reader1.readAsDataURL(image1Input);
+        reader2.readAsDataURL(image2Input);
+    };
+
+    reader1.readAsDataURL(image1Input);
+}
+    // Function to read the HTML file and return its content
+    function readFile(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        callback(event.target.result);
+      };
+      reader.readAsText(file);
+    }
+    // Function to render HTML content to an image
+    function renderHTMLToImage(htmlContent, callback) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      document.body.appendChild(tempDiv); // Append to body temporarily for rendering
+      html2canvas(tempDiv).then(function(canvas) {
+        document.body.removeChild(tempDiv); // Remove the temporary div after rendering
+        const imgData = canvas.toDataURL("image/png"); // Convert to image data URL
+        callback(imgData); // Pass the image data URL to the callback
+      });
+    }
+    // Function to compare the two uploaded HTML files
+    function compareUploadedFiles() {
+      const fileInput1 = document.getElementById("fileInput1");
+      const fileInput2 = document.getElementById("fileInput2");
+      if (!fileInput1.files.length || !fileInput2.files.length) {
+        alert("Please upload both HTML files!");
+        return;
+      }
+      // Read the HTML files
+      readFile(fileInput1.files[0], function(html1) {
+        readFile(fileInput2.files[0], function(html2) {
+          // Render both HTML pages to images
+          renderHTMLToImage(html1, function(image1) {
+            renderHTMLToImage(html2, function(image2) {
+              // Use Resemble.js to compare the two images
+              resemble(image1)
+                .compareTo(image2)
+                .onComplete(function(data) {
+                  // Display the comparison results
+                  const resultHtml = `
+                    <p><strong>Mismatch Percentage: ${data.misMatchPercentage}%</strong></p>
+                    <img src="${data.getImageDataUrl()}" alt="Diff Image"/>
+                  `;
+                  document.getElementById("imageComparisonResults").innerHTML = resultHtml;
+                });
+            });
+          });
+        });
+      });
+    }
+
+    let baseFile = null;
+    var child_file_cnt = 0;
+    const childFiles = [];
+    // Function to read a file and return its content
+    function readBulkFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ content: reader.result, type: file.type, name: file.name });
+        reader.onerror = () => reject(new Error(`Error reading file: ${file.name}`));
+        if (file.type.includes("html")) {
+          reader.readAsText(file);
+        } else {
+          reader.readAsDataURL(file);
         }
-    </script>
+      });
+    }
+    // Render HTML content to an image
+    function renderBulkHTMLToImage(htmlContent) {
+      return new Promise((resolve) => {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = htmlContent;
+        // tempDiv.style.position = "absolute";
+        // tempDiv.style.left = "-9999px"; // Hide the temporary div
+        document.body.appendChild(tempDiv);
+        html2canvas(tempDiv).then((canvas) => {
+          document.body.removeChild(tempDiv);
+          resolve(canvas.toDataURL("image/png"));
+        });
+      });
+    }
 
+    // Process file: Convert HTML to image if needed
+    async function processFile(file) {
+      const { content, type } = file;
+      if (type.includes("html")) {
+        return renderBulkHTMLToImage(content);
+      }
+      return content; // Return image directly
+    }
+    // Handle base file upload
+    document.getElementById("baseFileInput").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        baseFile = await readBulkFile(file);
+        // alert(`Base file "${file.name}" uploaded successfully.`);
+      }
+    });
+    // Handle child file upload
+    document.getElementById("childFileInput").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        child_file_cnt = child_file_cnt+1;
+        const childFile = await readBulkFile(file);
+        childFiles.push(childFile);
+        // Display uploaded file as a link
+        const uploadedFilesContainer = document.getElementById("uploadedFiles");
+        const fileLink = document.createElement("a");
+        fileLink.href = "#";
+        fileLink.className = "file-link";
+        fileLink.textContent = `Child File ${child_file_cnt} : ${file.name}`;
+        // fileLink.addEventListener("click", () => showFileContent(childFile));
+        uploadedFilesContainer.appendChild(fileLink);
+        // Create a button for comparison
+        const comparisonButtonsContainer = document.getElementById("comparisonButtons");
+        const compareButton = document.createElement("button");
+        compareButton.textContent = `Compare with Child File ${child_file_cnt}`;
+        compareButton.addEventListener("click", () => compareWithBaseFile(childFile));
+        comparisonButtonsContainer.appendChild(compareButton);
+      }
+    });
+    // Function to show file content in a preview --> commented for now , might add later based on requirements
+    function showFileContent(file) {
+      const previewContainer = document.createElement("div");
+      previewContainer.className = "file-preview";
+      if (file.type.includes("html")) {
+        previewContainer.innerHTML = `<h3>${file.name}</h3><pre>${file.content}</pre>`;
+      } else {
+        previewContainer.innerHTML = `<h3>${file.name}</h3><img src="${file.content}" alt="${file.name}" />`;
+      }
+      document.getElementById("uploadedFiles").appendChild(previewContainer);
+    }
+    // Function to compare a child file with the base file
+    async function compareWithBaseFile(childFile) {
+      if (!baseFile) {
+        alert("Please upload a base file first.");
+        return;
+      }
+      try {
+        const baseImage = await processFile(baseFile);
+        const childImage = await processFile(childFile);
+        // Use Resemble.js to compare
+        resemble(baseImage)
+          .compareTo(childImage)
+          .onComplete((data) => {
+            // Display the comparison results
+            const resultsContainer = document.getElementById("comparisonResults");
+            const resultHtml = `
+              <div class="result-item">
+                <p><strong>Comparison Results with ${childFile.name}:</strong></p>
+                <p><strong>Mismatch Percentage:</strong> ${data.misMatchPercentage}%</p>
+                <img src="${data.getImageDataUrl()}" alt="Diff Image" />
+              </div>
+            `;
+            resultsContainer.innerHTML = resultHtml;
+          });
+        } catch (error) {
+        console.error("Error during comparison:", error);
+        alert("An error occurred during comparison. Please try again.");
+      }
+    }
+  </script>
 </body>
 </html>
